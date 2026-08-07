@@ -7,6 +7,9 @@ const {
 
 const path = require("path");
 
+const modes =
+    require("./modes.json");
+
 const activeStreams =
     new Map();
 
@@ -49,9 +52,14 @@ ipcMain.on(
     async (event, data) => {
 
         const {
-            requestId,
-            conversation
-        } = data;
+    requestId,
+    conversation,
+    mode
+} = data;
+
+const selectedMode =
+    modes[mode] ||
+    modes.general;
 
 const controller =
     new AbortController();
@@ -80,21 +88,39 @@ activeStreams.set(
 
     model: "llama3.2",
 
-    messages: conversation,
+    messages: [
+
+    {
+        role: "system",
+
+        content:
+            selectedMode.systemPrompt
+    },
+
+    ...conversation
+
+],
 
     stream: true,
 
     options: {
 
-        temperature: 0.9,
+    temperature:
+        selectedMode.temperature,
 
-        top_p: 0.95,
+    top_p:
+        selectedMode.topP,
 
-        seed: Math.floor(
-            Math.random() * 2147483647
+    num_predict:
+        selectedMode.numPredict,
+
+    seed:
+        Math.floor(
+            Math.random() *
+            2147483647
         )
 
-    }
+}
 
 })
 
@@ -338,6 +364,31 @@ ipcMain.on(
                 requestId
             }
         );
+
+    }
+);
+
+ipcMain.handle(
+    "get-modes",
+    () => {
+
+        return modes;
+
+    }
+);
+
+ipcMain.handle(
+    "copy-text",
+    (
+        event,
+        text
+    ) => {
+
+        clipboard.writeText(
+            text
+        );
+
+        return true;
 
     }
 );

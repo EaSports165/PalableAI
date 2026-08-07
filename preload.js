@@ -3,21 +3,29 @@ const {
     ipcRenderer
 } = require("electron");
 
-
 contextBridge.exposeInMainWorld(
     "myAI",
     {
 
+        getModes: () => {
+    return ipcRenderer.invoke(
+        "get-modes"
+    );
+},
+
+
         askStream: (
             requestId,
-            conversation
+            conversation,
+            mode
         ) => {
 
             ipcRenderer.send(
                 "ask-ai-stream",
                 {
                     requestId,
-                    conversation
+                    conversation,
+                    mode
                 }
             );
 
@@ -107,7 +115,7 @@ contextBridge.exposeInMainWorld(
                 text
             );
 
-        }
+        },
 
     }
 );
