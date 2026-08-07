@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>MyAI</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+
+            font-family:
+                Arial,
+                sans-serif;
+
+            background: #212121;
+
+            color: white;
+
+            height: 100vh;
+
+            display: flex;
+
+            overflow: hidden;
+        }
+
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+
+            background: #171717;
+
+            padding: 15px;
+
+            display: flex;
+            flex-direction: column;
+
+            flex-shrink: 0;
+        }
+
+
+        .new-chat {
+            width: 100%;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #2f2f2f;
+
+            color: white;
+
+            font-size: 15px;
+
+            cursor: pointer;
+        }
+
+
+        .new-chat:hover {
+            background: #3a3a3a;
+        }
+
+
+        .chat-list {
+            margin-top: 15px;
+
+            flex: 1;
+
+            overflow-y: auto;
+        }
+
+
+        .chat-item {
+            display: flex;
+
+            align-items: center;
+
+            gap: 5px;
+
+            padding: 4px;
+
+            margin-bottom: 4px;
+
+            border-radius: 8px;
+        }
+
+
+        .chat-item:hover {
+            background: #252525;
+        }
+
+
+        .chat-item.active {
+            background: #2f2f2f;
+        }
+
+
+        .chat-title {
+            flex: 1;
+
+            min-width: 0;
+
+            border: none;
+
+            background: transparent;
+
+            color: white;
+
+            text-align: left;
+
+            font-size: 14px;
+
+            padding: 9px 6px;
+
+            cursor: pointer;
+
+            overflow: hidden;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .chat-action {
+            width: 28px;
+            height: 28px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            background: transparent;
+
+            color: #aaaaaa;
+
+            cursor: pointer;
+
+            flex-shrink: 0;
+        }
+
+
+        .chat-action:hover {
+            background: #444444;
+
+            color: white;
+        }
+
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+            flex: 1;
+
+            min-width: 0;
+
+            height: 100vh;
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+
+        .chat-area {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding:
+                40px
+                20px
+                80px;
+        }
+
+
+        /* =========================
+           WELCOME
+        ========================= */
+
+        .welcome {
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+
+        .welcome h1 {
+            font-size: 30px;
+        }
+
+
+        /* =========================
+           MESSAGES
+        ========================= */
+
+        .messages {
+            width: 100%;
+
+            max-width: 850px;
+
+            margin: 0 auto;
+        }
+
+
+        .message-row {
+            width: 100%;
+
+            display: flex;
+
+            margin-bottom: 25px;
+        }
+
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+
+        .message-row.ai {
+            justify-content: flex-start;
+        }
+
+
+        .message {
+            max-width: 75%;
+
+            padding: 12px 16px;
+
+            border-radius: 18px;
+
+            font-size: 16px;
+
+            line-height: 1.5;
+
+            word-wrap: break-word;
+        }
+
+
+        .user .message {
+            background: #303030;
+
+            white-space: pre-wrap;
+        }
+
+
+        .ai .message {
+            background: transparent;
+
+            padding-left: 0;
+
+            white-space: normal;
+        }
+
+
+        /* =========================
+           INPUT
+        ========================= */
+
+        .input-area {
+            padding: 20px;
+
+            display: flex;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    transparent,
+                    #212121 25%
+                );
+        }
+
+
+        .input-box {
+            width: 70%;
+
+            max-width: 800px;
+
+            min-width: 300px;
+
+            background: #2f2f2f;
+
+            border-radius: 24px;
+
+            padding:
+                10px
+                12px
+                10px
+                20px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+
+        #messageInput {
+            flex: 1;
+
+            min-width: 0;
+
+            background: transparent;
+
+            border: none;
+
+            outline: none;
+
+            color: white;
+
+            font-size: 16px;
+        }
+
+
+        #messageInput::placeholder {
+            color: #8f8f8f;
+        }
+
+
+        .send {
+            width: 38px;
+            height: 38px;
+
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            border: none;
+
+            font-size: 20px;
+
+            cursor: pointer;
+
+            background: white;
+
+            color: black;
+        }
+
+
+        .send:hover {
+            background: #dddddd;
+        }
+
+
+        .send:disabled {
+            opacity: 0.5;
+
+            cursor: default;
+        }
+
+
+        /* =========================
+           MARKDOWN
+        ========================= */
+
+        .ai .message p {
+            margin:
+                0
+                0
+                12px
+                0;
+        }
+
+
+        .ai .message p:last-child {
+            margin-bottom: 0;
+        }
+
+
+        .ai .message h1,
+        .ai .message h2,
+        .ai .message h3 {
+            margin-top: 18px;
+
+            margin-bottom: 10px;
+        }
+
+
+        .ai .message h1 {
+            font-size: 26px;
+        }
+
+
+        .ai .message h2 {
+            font-size: 22px;
+        }
+
+
+        .ai .message h3 {
+            font-size: 18px;
+        }
+
+
+        .ai .message ul,
+        .ai .message ol {
+            padding-left: 25px;
+
+            margin: 10px 0;
+        }
+
+
+        .ai .message li {
+            margin: 5px 0;
+        }
+
+
+        .ai .message strong {
+            color: white;
+        }
+
+
+        .ai .message code {
+            font-family:
+                Consolas,
+                monospace;
+
+            background: #303030;
+
+            padding: 2px 5px;
+
+            border-radius: 5px;
+        }
+
+
+        .ai .message pre {
+            background: #101010;
+
+            padding: 16px;
+
+            margin: 0;
+
+            overflow-x: auto;
+
+            border: none;
+
+            border-radius:
+                0
+                0
+                10px
+                10px;
+        }
+
+
+        .ai .message pre code {
+            background: transparent;
+
+            padding: 0;
+
+            border-radius: 0;
+
+            color: #e6e6e6;
+
+            white-space: pre;
+        }
+
+
+        /* =========================
+           CODE BLOCKS
+        ========================= */
+
+        .code-block {
+            margin: 14px 0;
+
+            background: #101010;
+
+            border: 1px solid #383838;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+
+        .code-header {
+            height: 38px;
+
+            padding: 0 12px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            background: #242424;
+
+            color: #bdbdbd;
+
+            font-size: 13px;
+
+            font-family:
+                Arial,
+                sans-serif;
+        }
+
+
+        .code-language {
+            text-transform: lowercase;
+        }
+
+
+        .copy-code {
+            border: none;
+
+            background: transparent;
+
+            color: #d0d0d0;
+
+            font-size: 13px;
+
+            cursor: pointer;
+
+            padding: 6px 8px;
+
+            border-radius: 6px;
+        }
+
+
+        .copy-code:hover {
+            background: #383838;
+
+            color: white;
+        }
+
+
+        .ai .message
+        .code-block
+        pre
+        code {
+            display: block;
+
+            background: transparent;
+
+            padding: 0;
+
+            color: #e6e6e6;
+
+            white-space: pre;
+
+            font-family:
+                Consolas,
+                "Courier New",
+                monospace;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+        /* =========================
+   MESSAGE ACTIONS
+========================= */
+
+.message-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+}
+
+.message-wrapper.user {
+    align-items: flex-end;
+}
+
+.message-wrapper.ai {
+    align-items: flex-start;
+}
+
+.message-wrapper .message {
+    max-width: 100%;
+}
+
+.message-actions {
+    display: flex;
+    gap: 6px;
+
+    margin-top: 5px;
+
+    opacity: 0.45;
+
+    transition: opacity 0.15s;
+}
+
+.message-wrapper:hover .message-actions {
+    opacity: 1;
+}
+
+.message-action-button {
+    border: none;
+    background: transparent;
+
+    color: #aaaaaa;
+
+    padding: 4px 7px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.message-action-button:hover {
+    background: #343434;
+
+    color: white;
+}
+/* =========================
+   EDIT MESSAGE MODAL
+========================= */
+
+.edit-overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.65);
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+.edit-modal {
+    width: 90%;
+    max-width: 600px;
+
+    background: #2b2b2b;
+
+    border: 1px solid #444;
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+}
+
+.edit-modal h2 {
+    margin: 0 0 14px 0;
+
+    font-size: 18px;
+}
+
+.edit-textarea {
+    width: 100%;
+    min-height: 120px;
+
+    resize: vertical;
+
+    background: #1f1f1f;
+
+    color: white;
+
+    border: 1px solid #555;
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    outline: none;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+}
+
+.edit-textarea:focus {
+    border-color: #888;
+}
+
+.edit-modal-buttons {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+.edit-modal-button {
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 9px 14px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+.edit-cancel {
+    background: #444;
+
+    color: white;
+}
+
+.edit-save {
+    background: white;
+
+    color: black;
+}
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <div class="sidebar">
+
+        <button
+            class="new-chat"
+            id="newChatButton"
+        >
+            ＋ New Chat
+        </button>
+
+
+        <div
+            class="chat-list"
+            id="chatList"
+        ></div>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <div class="main">
+
+        <div
+            class="chat-area"
+            id="chatArea"
+        >
+
+            <div
+                class="welcome"
+                id="welcome"
+            >
+
+                <h1>
+                    How can I help?
+                </h1>
+
+            </div>
+
+
+            <div
+                class="messages"
+                id="messages"
+            ></div>
+
+        </div>
+
+
+        <div class="input-area">
+
+            <div class="input-box">
+
+                <input
+                    id="messageInput"
+                    type="text"
+                    placeholder="Message MyAI..."
+                    autocomplete="off"
+                >
+
+
+                <button
+                    class="send"
+                    id="sendButton"
+                >
+                    ↑
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+<div
+    class="edit-overlay"
+    id="editOverlay"
+>
+
+    <div class="edit-modal">
+
+        <h2>Edit message</h2>
+
+        <textarea
+            class="edit-textarea"
+            id="editTextArea"
+        ></textarea>
+
+        <div class="edit-modal-buttons">
+
+            <button
+                class="edit-modal-button edit-cancel"
+                id="cancelEditButton"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="edit-modal-button edit-save"
+                id="saveEditButton"
+            >
+                Save & Regenerate
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+    <!-- MARKDOWN LIBRARIES -->
+
+    <script
+        src="./node_modules/marked/lib/marked.umd.js"
+    ></script>
+
+    <script
+        src="./node_modules/dompurify/dist/purify.min.js"
+    ></script>
+
+
+    <!-- =========================
+         MYAI JAVASCRIPT
+    ========================== -->
+
+    <script>
+
+        const input =
+            document.getElementById(
+                "messageInput"
+            );
+
+
+        const sendButton =
+            document.getElementById(
+                "sendButton"
+            );
+
+
+        const messages =
+            document.getElementById(
+                "messages"
+            );
+
+
+        const welcome =
+            document.getElementById(
+                "welcome"
+            );
+
+
+        const newChatButton =
+            document.getElementById(
+                "newChatButton"
+            );
+
+
+        const chatArea =
+            document.getElementById(
+                "chatArea"
+            );
+
+
+        const chatList =
+            document.getElementById(
+                "chatList"
+            );
+            const editOverlay =
+    document.getElementById(
+        "editOverlay"
+    );
+
+const editTextArea =
+    document.getElementById(
+        "editTextArea"
+    );
+
+const cancelEditButton =
+    document.getElementById(
+        "cancelEditButton"
+    );
+
+const saveEditButton =
+    document.getElementById(
+        "saveEditButton"
+    );
+
+
+        let chats = [];
+
+        let activeChatId = null;
+
+        let isGenerating = false;
+
+        let activeRequestId = null;
+
+        let currentAIBubble = null;
+
+        let currentAIText = "";
+
+        let firstChunk = true;
+
+        let pendingEditIndex = null;
+
+
+        /* =========================
+           MARKDOWN
+        ========================= */
+
+
+        function renderMarkdownInto(
+            element,
+            text
+        ) {
+
+            const html =
+                marked.parse(
+                    text
+                );
+
+
+            element.innerHTML =
+                DOMPurify.sanitize(
+                    html
+                );
+
+
+            enhanceCodeBlocks(
+                element
+            );
+
+        }
+
+
+        function enhanceCodeBlocks(
+            element
+        ) {
+
+            const codeBlocks =
+                element.querySelectorAll(
+                    "pre"
+                );
+
+
+            codeBlocks.forEach(
+                pre => {
+
+                    if (
+                        pre.parentElement &&
+                        pre.parentElement
+                            .classList
+                            .contains(
+                                "code-block"
+                            )
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const code =
+                        pre.querySelector(
+                            "code"
+                        );
+
+
+                    if (!code) {
+                        return;
+                    }
+
+
+                    let language =
+                        "code";
+
+
+                    code.classList.forEach(
+                        className => {
+
+                            if (
+                                className.startsWith(
+                                    "language-"
+                                )
+                            ) {
+
+                                language =
+                                    className.replace(
+                                        "language-",
+                                        ""
+                                    );
+
+                            }
+
+                        }
+                    );
+
+
+                    const wrapper =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    wrapper.classList.add(
+                        "code-block"
+                    );
+
+
+                    const header =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    header.classList.add(
+                        "code-header"
+                    );
+
+
+                    const languageLabel =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    languageLabel.classList.add(
+                        "code-language"
+                    );
+
+
+                    languageLabel.textContent =
+                        language;
+
+
+                    const copyButton =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    copyButton.classList.add(
+                        "copy-code"
+                    );
+
+
+                    copyButton.textContent =
+                        "Copy code";
+
+
+                    copyButton.addEventListener(
+                        "click",
+
+                        async () => {
+
+                            const codeText =
+                                code.textContent;
+
+
+                            await window.myAI
+                                .copyText(
+                                    codeText
+                                );
+
+
+                            copyButton.textContent =
+                                "Copied!";
+
+
+                            setTimeout(
+                                () => {
+
+                                    copyButton.textContent =
+                                        "Copy code";
+
+                                },
+
+                                1500
+                            );
+
+                        }
+                    );
+
+
+                    header.appendChild(
+                        languageLabel
+                    );
+
+
+                    header.appendChild(
+                        copyButton
+                    );
+
+
+                    pre.parentNode
+                        .insertBefore(
+                            wrapper,
+                            pre
+                        );
+
+
+                    wrapper.appendChild(
+                        header
+                    );
+
+
+                    wrapper.appendChild(
+                        pre
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =========================
+           STORAGE
+        ========================= */
+
+
+        function saveChats() {
+
+            localStorage.setItem(
+                "myAIChats",
+                JSON.stringify(
+                    chats
+                )
+            );
+
+
+            localStorage.setItem(
+                "myAIActiveChat",
+                activeChatId || ""
+            );
+
+        }
+
+
+        function loadChats() {
+
+            const savedChats =
+                localStorage.getItem(
+                    "myAIChats"
+                );
+
+
+            const savedActive =
+                localStorage.getItem(
+                    "myAIActiveChat"
+                );
+
+
+            if (savedChats) {
+
+                try {
+
+                    chats =
+                        JSON.parse(
+                            savedChats
+                        );
+
+                } catch {
+
+                    chats = [];
+
+                }
+
+            }
+
+
+            if (
+                chats.length === 0
+            ) {
+
+                createNewChat();
+
+                return;
+
+            }
+
+
+            const activeExists =
+                chats.some(
+                    chat =>
+                        chat.id ===
+                        savedActive
+                );
+
+
+            if (activeExists) {
+
+                activeChatId =
+                    savedActive;
+
+            } else {
+
+                activeChatId =
+                    chats[0].id;
+
+            }
+
+
+            renderChatList();
+
+            renderActiveChat();
+
+        }
+
+
+        function getActiveChat() {
+
+            return chats.find(
+                chat =>
+                    chat.id ===
+                    activeChatId
+            );
+
+        }
+
+
+        /* =========================
+           NEW CHAT
+        ========================= */
+
+
+        function createNewChat() {
+
+            if (isGenerating) {
+                return;
+            }
+
+
+            const chat = {
+
+                id:
+                    crypto.randomUUID(),
+
+                title:
+                    "New Chat",
+
+                messages:
+                    []
+
+            };
+
+
+            chats.unshift(
+                chat
+            );
+
+
+            activeChatId =
+                chat.id;
+
+
+            saveChats();
+
+            renderChatList();
+
+            renderActiveChat();
+
+            input.focus();
+
+        }
+
+
+        /* =========================
+           CHAT LIST
+        ========================= */
+
+
+        function renderChatList() {
+
+            chatList.innerHTML =
+                "";
+
+
+            chats.forEach(
+                chat => {
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    item.classList.add(
+                        "chat-item"
+                    );
+
+
+                    if (
+                        chat.id ===
+                        activeChatId
+                    ) {
+
+                        item.classList.add(
+                            "active"
+                        );
+
+                    }
+
+
+                    const titleButton =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    titleButton.classList.add(
+                        "chat-title"
+                    );
+
+
+                    titleButton.textContent =
+                        chat.title;
+
+
+                    titleButton.title =
+                        chat.title;
+
+
+                    titleButton.addEventListener(
+                        "click",
+                        () => {
+
+                            switchChat(
+                                chat.id
+                            );
+
+                        }
+                    );
+
+
+                    const renameButton =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    renameButton.classList.add(
+                        "chat-action"
+                    );
+
+
+                    renameButton.textContent =
+                        "✎";
+
+
+                    renameButton.title =
+                        "Rename chat";
+
+
+                    renameButton.addEventListener(
+                        "click",
+                        () => {
+
+                            renameChat(
+                                chat.id
+                            );
+
+                        }
+                    );
+
+
+                    const deleteButton =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    deleteButton.classList.add(
+                        "chat-action"
+                    );
+
+
+                    deleteButton.textContent =
+                        "×";
+
+
+                    deleteButton.title =
+                        "Delete chat";
+
+
+                    deleteButton.addEventListener(
+                        "click",
+                        () => {
+
+                            deleteChat(
+                                chat.id
+                            );
+
+                        }
+                    );
+
+
+                    item.appendChild(
+                        titleButton
+                    );
+
+
+                    item.appendChild(
+                        renameButton
+                    );
+
+
+                    item.appendChild(
+                        deleteButton
+                    );
+
+
+                    chatList.appendChild(
+                        item
+                    );
+
+                }
+            );
+
+        }
+
+
+        function switchChat(
+            chatId
+        ) {
+
+            if (isGenerating) {
+                return;
+            }
+
+
+            activeChatId =
+                chatId;
+
+
+            saveChats();
+
+            renderChatList();
+
+            renderActiveChat();
+
+            input.focus();
+
+        }
+
+
+        function renameChat(
+            chatId
+        ) {
+
+            if (isGenerating) {
+                return;
+            }
+
+
+            const chat =
+                chats.find(
+                    chat =>
+                        chat.id ===
+                        chatId
+                );
+
+
+            if (!chat) {
+                return;
+            }
+
+
+            const newName =
+                prompt(
+                    "Rename chat:",
+                    chat.title
+                );
+
+
+            if (
+                newName === null
+            ) {
+
+                return;
+
+            }
+
+
+            const cleanedName =
+                newName.trim();
+
+
+            if (
+                cleanedName === ""
+            ) {
+
+                return;
+
+            }
+
+
+            chat.title =
+                cleanedName;
+
+
+            saveChats();
+
+            renderChatList();
+
+        }
+
+
+        function deleteChat(
+            chatId
+        ) {
+
+            if (isGenerating) {
+                return;
+            }
+
+
+            const chat =
+                chats.find(
+                    chat =>
+                        chat.id ===
+                        chatId
+                );
+
+
+            if (!chat) {
+                return;
+            }
+
+
+            const shouldDelete =
+                confirm(
+                    'Delete "' +
+                    chat.title +
+                    '"?'
+                );
+
+
+            if (!shouldDelete) {
+                return;
+            }
+
+
+            chats =
+                chats.filter(
+                    chat =>
+                        chat.id !==
+                        chatId
+                );
+
+
+            if (
+                chats.length === 0
+            ) {
+
+                const replacement = {
+
+                    id:
+                        crypto.randomUUID(),
+
+                    title:
+                        "New Chat",
+
+                    messages:
+                        []
+
+                };
+
+
+                chats.push(
+                    replacement
+                );
+
+
+                activeChatId =
+                    replacement.id;
+
+            } else if (
+                activeChatId ===
+                chatId
+            ) {
+
+                activeChatId =
+                    chats[0].id;
+
+            }
+
+
+            saveChats();
+
+            renderChatList();
+
+            renderActiveChat();
+
+        }
+
+
+        /* =========================
+           MESSAGES
+        ========================= */
+
+
+        function addMessage(
+    text,
+    sender,
+    messageIndex = null
+) {
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+
+    row.classList.add(
+        "message-row",
+        sender
+    );
+
+
+    const wrapper =
+        document.createElement(
+            "div"
+        );
+
+
+    wrapper.classList.add(
+        "message-wrapper",
+        sender
+    );
+
+
+    const bubble =
+        document.createElement(
+            "div"
+        );
+
+
+    bubble.classList.add(
+        "message"
+    );
+
+
+    if (
+        sender === "ai"
+    ) {
+
+        renderMarkdownInto(
+            bubble,
+            text
+        );
+
+    } else {
+
+        bubble.textContent =
+            text;
+
+    }
+
+
+    wrapper.appendChild(
+        bubble
+    );
+
+
+    /*
+        Only saved messages
+        get action buttons.
+    */
+
+    if (
+        messageIndex !== null
+    ) {
+
+        const actions =
+            document.createElement(
+                "div"
+            );
+
+
+        actions.classList.add(
+            "message-actions"
+        );
+
+
+        if (
+            sender === "user"
+        ) {
+
+            const editButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            editButton.classList.add(
+                "message-action-button"
+            );
+
+
+            editButton.textContent =
+                "✎ Edit";
+
+
+            editButton.addEventListener(
+                "click",
+                () => {
+
+                    editUserMessage(
+                        messageIndex
+                    );
+
+                }
+            );
+
+
+            actions.appendChild(
+                editButton
+            );
+
+        }
+
+
+        if (
+            sender === "ai"
+        ) {
+
+            const regenerateButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            regenerateButton.classList.add(
+                "message-action-button"
+            );
+
+
+            regenerateButton.textContent =
+                "↻ Regenerate";
+
+
+            regenerateButton.addEventListener(
+                "click",
+                () => {
+
+                    regenerateResponse(
+                        messageIndex
+                    );
+
+                }
+            );
+
+
+            actions.appendChild(
+                regenerateButton
+            );
+
+        }
+
+
+        wrapper.appendChild(
+            actions
+        );
+
+    }
+
+
+    row.appendChild(
+        wrapper
+    );
+
+
+    messages.appendChild(
+        row
+    );
+
+
+    scrollToBottom();
+
+
+    return bubble;
+
+}
+
+
+        function renderActiveChat() {
+
+            messages.innerHTML =
+                "";
+
+
+            const chat =
+                getActiveChat();
+
+
+            if (
+                !chat ||
+                chat.messages.length === 0
+            ) {
+
+                welcome.style.display =
+                    "flex";
+
+                return;
+
+            }
+
+
+            welcome.style.display =
+                "none";
+
+
+            chat.messages.forEach(
+    (
+        message,
+        index
+    ) => {
+
+        const sender =
+            message.role ===
+            "user"
+                ? "user"
+                : "ai";
+
+
+        addMessage(
+            message.content,
+            sender,
+            index
+        );
+
+    }
+);
+
+
+            scrollToBottom();
+
+        }
+
+
+        function scrollToBottom() {
+
+            chatArea.scrollTop =
+                chatArea.scrollHeight;
+
+        }
+
+
+        /* =========================
+           AUTO TITLE
+        ========================= */
+
+
+        function makeChatTitle(
+            text
+        ) {
+
+            const maxLength =
+                32;
+
+
+            let title =
+                text.trim();
+
+
+            if (
+                title.length >
+                maxLength
+            ) {
+
+                title =
+                    title.substring(
+                        0,
+                        maxLength
+                    ) + "...";
+
+            }
+
+
+            return title;
+
+        }
+
+
+        /* =========================
+           STREAMING
+        ========================= */
+
+
+        function finishGeneration() {
+
+            isGenerating =
+                false;
+
+
+            sendButton.disabled =
+                false;
+
+            sendButton.textContent =
+                "↑";
+
+            activeRequestId =
+                null;
+
+
+            currentAIBubble =
+                null;
+
+
+            currentAIText =
+                "";
+
+
+            firstChunk =
+                true;
+
+
+            input.focus();
+
+        }
+
+
+        window.myAI.onChunk(
+            data => {
+
+                if (
+                    data.requestId !==
+                    activeRequestId
+                ) {
+
+                    return;
+
+                }
+
+
+                if (firstChunk) {
+
+                    currentAIBubble.innerHTML =
+                        "";
+
+                    firstChunk =
+                        false;
+
+                }
+
+
+                currentAIText +=
+                    data.text;
+
+
+                renderMarkdownInto(
+                    currentAIBubble,
+                    currentAIText
+                );
+
+
+                scrollToBottom();
+
+            }
+        );
+
+
+        window.myAI.onDone(
+            data => {
+
+                if (
+                    data.requestId !==
+                    activeRequestId
+                ) {
+
+                    return;
+
+                }
+
+
+                const chat =
+                    getActiveChat();
+
+
+                if (chat) {
+
+                    chat.messages.push({
+
+                        role:
+                            "assistant",
+
+                        content:
+                            currentAIText
+
+                    });
+
+
+                    saveChats();
+
+                }
+
+
+                finishGeneration();
+
+                renderActiveChat();
+
+        });
+
+        window.myAI.onStopped(
+    data => {
+
+        if (
+            data.requestId !==
+            activeRequestId
+        ) {
+
+            return;
+
+        }
+
+
+        const chat =
+            getActiveChat();
+
+
+        if (
+            currentAIText.trim() !== ""
+        ) {
+
+            if (chat) {
+
+                chat.messages.push({
+
+                    role:
+                        "assistant",
+
+                    content:
+                        currentAIText
+
+                });
+
+
+                saveChats();
+
+            }
+
+        } else if (
+            currentAIBubble
+        ) {
+
+            currentAIBubble.textContent =
+                "Generation stopped.";
+
+        }
+
+
+        finishGeneration();
+
+        renderActiveChat();
+
+    }
+);
+
+        window.myAI.onError(
+            data => {
+
+                if (
+                    data.requestId !==
+                    activeRequestId
+                ) {
+
+                    return;
+
+                }
+
+
+                currentAIBubble.textContent =
+                    "Error: " +
+                    data.error;
+
+
+                finishGeneration();
+
+            }
+        );
+
+
+        /* =========================
+           SEND MESSAGE
+        ========================= */
+
+function stopGeneration() {
+
+    if (
+        !isGenerating ||
+        !activeRequestId
+    ) {
+
+        return;
+
+    }
+
+
+    window.myAI.stopStream(
+        activeRequestId
+    );
+
+}
+function editUserMessage(
+    messageIndex
+) {
+
+    if (isGenerating) {
+        return;
+    }
+
+
+    const chat =
+        getActiveChat();
+
+
+    if (!chat) {
+        return;
+    }
+
+
+    const message =
+        chat.messages[
+            messageIndex
+        ];
+
+
+    if (
+        !message ||
+        message.role !== "user"
+    ) {
+
+        return;
+    }
+
+
+    /*
+        Warn if later messages
+        will be removed.
+    */
+
+    if (
+        messageIndex <
+        chat.messages.length - 1
+    ) {
+
+        const continueEdit =
+            confirm(
+                "Editing this message will remove the messages after it and generate a new response. Continue?"
+            );
+
+
+        if (!continueEdit) {
+            return;
+        }
+
+    }
+
+
+    pendingEditIndex =
+        messageIndex;
+
+
+    editTextArea.value =
+        message.content;
+
+
+    editOverlay.style.display =
+        "flex";
+
+
+    setTimeout(
+        () => {
+
+            editTextArea.focus();
+
+            editTextArea.setSelectionRange(
+                editTextArea.value.length,
+                editTextArea.value.length
+            );
+
+        },
+
+        50
+    );
+
+}
+function closeEditWindow() {
+
+    editOverlay.style.display =
+        "none";
+
+
+    editTextArea.value =
+        "";
+
+
+    pendingEditIndex =
+        null;
+
+}
+
+
+function saveEditedMessage() {
+
+    if (
+        pendingEditIndex === null
+    ) {
+
+        return;
+    }
+
+
+    const newText =
+        editTextArea.value.trim();
+
+
+    if (
+        newText === ""
+    ) {
+
+        return;
+    }
+
+
+    const chat =
+        getActiveChat();
+
+
+    if (!chat) {
+        return;
+    }
+
+
+    const message =
+        chat.messages[
+            pendingEditIndex
+        ];
+
+
+    if (
+        !message ||
+        message.role !== "user"
+    ) {
+
+        return;
+    }
+
+
+    message.content =
+        newText;
+
+
+    /*
+        Remove everything after
+        the edited message.
+    */
+
+    chat.messages =
+        chat.messages.slice(
+            0,
+            pendingEditIndex + 1
+        );
+
+
+    saveChats();
+
+
+    closeEditWindow();
+
+
+    renderActiveChat();
+
+
+    startAIResponse(
+        chat
+    );
+
+}
+function regenerateResponse(
+    messageIndex
+) {
+
+    if (isGenerating) {
+        return;
+    }
+
+
+    const chat =
+        getActiveChat();
+
+
+    if (!chat) {
+        return;
+    }
+
+
+    const message =
+        chat.messages[
+            messageIndex
+        ];
+
+
+    if (
+        !message ||
+        message.role !==
+        "assistant"
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Regenerating an older reply
+        removes everything after it.
+    */
+
+    if (
+        messageIndex <
+        chat.messages.length - 1
+    ) {
+
+        const continueRegenerate =
+            confirm(
+                "Regenerating this response will remove the messages after it. Continue?"
+            );
+
+
+        if (!continueRegenerate) {
+            return;
+        }
+
+    }
+
+
+    /*
+        Remove this AI response
+        and everything after it.
+    */
+
+    chat.messages =
+        chat.messages.slice(
+            0,
+            messageIndex
+        );
+
+
+    /*
+        There should be a user
+        message before the AI reply.
+    */
+
+    if (
+        chat.messages.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    saveChats();
+
+
+    renderActiveChat();
+
+
+    startAIResponse(
+        chat
+    );
+
+}
+function startAIResponse(
+    chat
+) {
+
+    if (
+        !chat ||
+        isGenerating
+    ) {
+
+        return;
+
+    }
+
+
+    isGenerating =
+        true;
+
+
+    sendButton.disabled =
+        false;
+
+
+    sendButton.textContent =
+        "■";
+
+
+    welcome.style.display =
+        "none";
+
+
+    currentAIBubble =
+        addMessage(
+            "Thinking...",
+            "ai"
+        );
+
+
+    currentAIText =
+        "";
+
+
+    firstChunk =
+        true;
+
+
+    activeRequestId =
+        crypto.randomUUID();
+
+
+    window.myAI.askStream(
+        activeRequestId,
+        chat.messages
+    );
+
+}
+
+        function sendMessage() {
+
+    const text =
+        input.value.trim();
+
+
+    if (
+        text === "" ||
+        isGenerating
+    ) {
+
+        return;
+
+    }
+
+
+    const chat =
+        getActiveChat();
+
+
+    if (!chat) {
+        return;
+    }
+
+
+    /*
+        Automatically name
+        brand-new chats.
+    */
+
+    if (
+        chat.messages.length ===
+        0
+    ) {
+
+        chat.title =
+            makeChatTitle(
+                text
+            );
+
+    }
+
+
+    chat.messages.push({
+
+        role:
+            "user",
+
+        content:
+            text
+
+    });
+
+
+    saveChats();
+
+
+    renderChatList();
+
+
+    welcome.style.display =
+        "none";
+
+
+    addMessage(
+        text,
+        "user",
+        chat.messages.length - 1
+    );
+
+
+    input.value =
+        "";
+
+
+    startAIResponse(
+        chat
+    );
+
+}
+
+
+        /* =========================
+           BUTTONS
+        ========================= */
+
+
+        sendButton.addEventListener(
+    "click",
+    () => {
+
+        if (isGenerating) {
+
+            stopGeneration();
+
+        } else {
+
+            sendMessage();
+
+        }
+
+    }
+);
+
+
+        input.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+
+                    sendMessage();
+
+                }
+
+            }
+        );
+
+
+        newChatButton.addEventListener(
+            "click",
+            createNewChat
+        );
+        cancelEditButton.addEventListener(
+    "click",
+    closeEditWindow
+);
+
+
+saveEditButton.addEventListener(
+    "click",
+    saveEditedMessage
+);
+
+
+editTextArea.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter" &&
+            event.ctrlKey
+        ) {
+
+            saveEditedMessage();
+
+        }
+
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeEditWindow();
+
+        }
+
+    }
+);
+
+
+        /* =========================
+           START
+        ========================= */
+
+
+        loadChats();
+
+    </script>
+
+
+</body>
+
+</html>

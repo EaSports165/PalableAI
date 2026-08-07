@@ -1,0 +1,29 @@
+{
+  "name": "myai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+  "dompurify": "^3.4.13",
+  "marked": "^18.0.9"
+},
+"build": {
+  "appId": "com.myai.app",
+  "productName": "MyAI",
+  "win": {
+    "target": "portable"
+  }
+}
+}
