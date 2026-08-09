@@ -774,6 +774,68 @@
     background: #2d2d2d;
 }
 
+.download-code {
+    border: none;
+
+    background: transparent;
+
+    color: #d0d0d0;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    padding: 6px 8px;
+
+    border-radius: 6px;
+}
+
+
+.download-code:hover {
+    background: #383838;
+
+    color: white;
+}
+
+
+.code-header-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+}
+
+.build-exe {
+    border: none;
+
+    background: transparent;
+
+    color: #d0d0d0;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    padding: 6px 8px;
+
+    border-radius: 6px;
+}
+
+
+.build-exe:hover {
+    background: #383838;
+
+    color: white;
+}
+
+
+.build-exe:disabled {
+    opacity: 0.55;
+
+    cursor: default;
+}
+
     </style>
 
 </head>
@@ -795,6 +857,10 @@
             ＋ New Chat
         </button>
 
+        <div class="mode-section">
+            <label for="modeSelect">Mode</label>
+            <select id="modeSelect"></select>
+        </div>
 
         <div
             class="chat-list"
@@ -802,17 +868,6 @@
         ></div>
 
     </div>
-
-    <div class="mode-section">
-
-    <label for="modeSelect">
-        Mode
-    </label>
-
-    <select id="modeSelect">
-    </select>
-
-</div>
 
 
     <!-- =========================
@@ -938,116 +993,70 @@ let availableModes = {};
 
     async function loadModeSelector() {
 
-    availableModes =
-        await window.myAI.getModes();
+        availableModes =
+            await window.myAI.getModes();
 
+        modeSelect.innerHTML =
+            "";
 
-    modeSelect.innerHTML =
-        "";
+        Object.entries(
+            availableModes
+        ).forEach(
+            ([id, mode]) => {
 
+                const option =
+                    document.createElement(
+                        "option"
+                    );
 
-    Object.entries(
-        availableModes
-    ).forEach(
-        ([id, mode]) => {
+                option.value =
+                    id;
 
-            const option =
-                document.createElement(
-                    "option"
+                option.textContent =
+                    mode.name;
+
+                modeSelect.appendChild(
+                    option
                 );
 
-
-            option.value =
-                id;
-
-
-            option.textContent =
-                mode.name;
-
-
-            modeSelect.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    const savedMode =
-        localStorage.getItem(
-            "myAIMode"
+            }
         );
 
-
-    if (
-        savedMode &&
-        availableModes[savedMode]
-    ) {
-
-        modeSelect.value =
-            savedMode;
-
-    } else {
-
-        modeSelect.value =
-            "general";
-
-    }
-
-}
-
-    modeSelect.innerHTML =
-        "";
-
-
-    Object.entries(
-        availableModes
-    ).forEach(
-        ([id, mode]) => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                id;
-
-
-            option.textContent =
-                mode.name;
-
-
-            modeSelect.appendChild(
-                option
+        const savedMode =
+            localStorage.getItem(
+                "myAIMode"
             );
 
+        if (
+            savedMode &&
+            availableModes[savedMode]
+        ) {
+
+            modeSelect.value =
+                savedMode;
+
+        } else if (
+            availableModes.general
+        ) {
+
+            modeSelect.value =
+                "general";
+
+        } else {
+
+            const firstMode =
+                Object.keys(
+                    availableModes
+                )[0];
+
+            if (firstMode) {
+                modeSelect.value =
+                    firstMode;
+            }
+
         }
-    );
-
-
-    const savedMode =
-        localStorage.getItem(
-            "myAIMode"
-        );
-
-
-    if (
-        savedMode &&
-        availableModes[savedMode]
-    ) {
-
-        modeSelect.value =
-            savedMode;
-
-    } else {
-
-        modeSelect.value =
-            "general";
 
     }
-
 
 
 modeSelect.addEventListener(
@@ -1162,7 +1171,439 @@ const saveEditButton =
             );
 
         }
+        
+        function getFileExtension(
+    language
+) {
 
+    const extensions = {
+
+        python: ".py",
+        py: ".py",
+
+        javascript: ".js",
+        js: ".js",
+
+        typescript: ".ts",
+        ts: ".ts",
+
+        csharp: ".cs",
+        cs: ".cs",
+        "c#": ".cs",
+
+        cpp: ".cpp",
+        "c++": ".cpp",
+
+        c: ".c",
+
+        java: ".java",
+
+        kotlin: ".kt",
+
+        swift: ".swift",
+
+        rust: ".rs",
+
+        go: ".go",
+
+        ruby: ".rb",
+
+        php: ".php",
+
+        lua: ".lua",
+
+        html: ".html",
+
+        css: ".css",
+
+        json: ".json",
+
+        xml: ".xml",
+
+        yaml: ".yaml",
+        yml: ".yml",
+
+        sql: ".sql",
+
+        bash: ".sh",
+        shell: ".sh",
+        sh: ".sh",
+
+        powershell: ".ps1",
+
+        batch: ".bat",
+        bat: ".bat",
+
+        markdown: ".md",
+        md: ".md",
+
+        text: ".txt",
+        txt: ".txt"
+
+    };
+
+
+    return (
+        extensions[
+            language.toLowerCase()
+        ] || ".txt"
+    );
+
+}
+
+function getCodeFileInfo(
+    code,
+    language
+) {
+
+    let content =
+        code.textContent;
+
+
+    const extension =
+        getFileExtension(
+            language || "text"
+        );
+
+
+    let filename =
+        null;
+
+
+    const lines =
+        content.split("\n");
+
+
+    /*
+        Search the first 5 lines
+        for something like:
+
+        # FILE: calculator.py
+        // FILE: Player.cs
+        -- FILE: script.lua
+    */
+
+    for (
+        let i = 0;
+        i < Math.min(
+            5,
+            lines.length
+        );
+        i++
+    ) {
+
+        let line =
+            lines[i].trim();
+
+
+        /*
+            Remove common
+            comment beginnings.
+        */
+
+        if (
+            line.startsWith("//")
+        ) {
+
+            line =
+                line.substring(2).trim();
+
+        } else if (
+            line.startsWith("#")
+        ) {
+
+            line =
+                line.substring(1).trim();
+
+        } else if (
+            line.startsWith("--")
+        ) {
+
+            line =
+                line.substring(2).trim();
+
+        } else if (
+            line.startsWith(";")
+        ) {
+
+            line =
+                line.substring(1).trim();
+
+        } else if (
+            line.toUpperCase()
+                .startsWith("REM ")
+        ) {
+
+            line =
+                line.substring(4).trim();
+
+        } else if (
+            line.startsWith("<!--")
+        ) {
+
+            line =
+                line.substring(4).trim();
+
+        }
+
+
+        /*
+            Remove HTML comment ending.
+        */
+
+        if (
+            line.endsWith("-->")
+        ) {
+
+            line =
+                line.substring(
+                    0,
+                    line.length - 3
+                ).trim();
+
+        }
+
+
+        /*
+            Look for FILE:
+        */
+
+        if (
+            line.toUpperCase()
+                .startsWith("FILE:")
+        ) {
+
+            filename =
+                line.substring(5).trim();
+
+
+            /*
+                Remove the marker
+                from the downloaded file.
+            */
+
+            lines.splice(
+                i,
+                1
+            );
+
+
+            content =
+                lines.join("\n");
+
+
+            break;
+
+        }
+
+    }
+
+
+    /*
+        If PalableAI gives:
+        FILE: calculator
+
+        automatically turn it into:
+        calculator.py
+    */
+
+    if (filename) {
+
+        const lastSlash =
+            Math.max(
+                filename.lastIndexOf("/"),
+                filename.lastIndexOf("\\")
+            );
+
+
+        const lastDot =
+            filename.lastIndexOf(".");
+
+
+        const hasExtension =
+            lastDot > lastSlash;
+
+
+        if (!hasExtension) {
+
+            filename +=
+                extension;
+
+        }
+
+    }
+
+
+    /*
+        Only use this if the AI
+        completely forgot a filename.
+    */
+
+    if (!filename) {
+
+        filename =
+            "PalableAI_File" +
+            extension;
+
+    }
+
+
+    /*
+        Remove characters Windows
+        does not allow in filenames.
+    */
+
+    const forbiddenCharacters =
+        [
+            "<",
+            ">",
+            ":",
+            "\"",
+            "/",
+            "\\",
+            "|",
+            "?",
+            "*"
+        ];
+
+
+    forbiddenCharacters.forEach(
+        character => {
+
+            filename =
+                filename
+                    .split(character)
+                    .join("_");
+
+        }
+    );
+
+
+    return {
+
+        filename,
+        content
+
+    };
+
+}
+
+function detectCodeLanguage(
+    codeText,
+    declaredLanguage
+) {
+
+    const declared =
+        (declaredLanguage || "")
+            .toLowerCase()
+            .trim();
+
+
+    /*
+        If PalableAI already gave us
+        a useful language, keep it.
+    */
+
+    if (
+        declared !== "" &&
+        declared !== "code" &&
+        declared !== "text" &&
+        declared !== "plaintext"
+    ) {
+
+        return declared;
+
+    }
+
+
+    const text =
+        codeText.toLowerCase();
+
+
+    /*
+        C#
+    */
+
+    if (
+        text.includes("using system;") ||
+        text.includes("using system.") ||
+        text.includes("console.writeline(") ||
+        text.includes("system.windows.forms") ||
+        text.includes(": monobehaviour") ||
+        text.includes("using unityengine")
+    ) {
+
+        return "csharp";
+
+    }
+
+
+    /*
+        Python
+    */
+
+    if (
+        text.includes("import tkinter") ||
+        text.includes("import secrets") ||
+        text.includes("def __init__(") ||
+        text.includes('if __name__ == "__main__"') ||
+        text.includes("print(")
+    ) {
+
+        return "python";
+
+    }
+
+
+    /*
+        C++
+    */
+
+    if (
+        text.includes("#include <iostream>") ||
+        text.includes("std::") ||
+        text.includes("cout <<") ||
+        text.includes("using namespace std")
+    ) {
+
+        return "cpp";
+
+    }
+
+
+    /*
+        Java
+    */
+
+    if (
+        text.includes("public static void main") ||
+        text.includes("system.out.println")
+    ) {
+
+        return "java";
+
+    }
+
+
+    /*
+        JavaScript
+    */
+
+    if (
+        text.includes("console.log(") ||
+        text.includes("document.getelementbyid(") ||
+        text.includes("const ") &&
+        text.includes("=>")
+    ) {
+
+        return "javascript";
+
+    }
+
+
+    return declared || "code";
+
+}
 
         function enhanceCodeBlocks(
             element
@@ -1202,6 +1643,11 @@ const saveEditButton =
                     }
 
 
+                    /*
+                        First read the language that
+                        Markdown gave the code block.
+                    */
+
                     let language =
                         "code";
 
@@ -1216,15 +1662,36 @@ const saveEditButton =
                             ) {
 
                                 language =
-                                    className.replace(
-                                        "language-",
-                                        ""
-                                    );
+                                    className
+                                        .replace(
+                                            "language-",
+                                            ""
+                                        )
+                                        .trim();
 
                             }
 
                         }
                     );
+
+
+                    /*
+                        If the AI used a generic
+                        label such as "code", inspect
+                        the source itself.
+                    */
+
+                    language =
+                        detectCodeLanguage(
+                            code.textContent,
+                            language
+                        );
+
+
+                    const normalizedLanguage =
+                        language
+                            .toLowerCase()
+                            .trim();
 
 
                     const wrapper =
@@ -1260,9 +1727,51 @@ const saveEditButton =
                     );
 
 
-                    languageLabel.textContent =
-                        language;
+                    const displayNames = {
+                        python: "Python",
+                        py: "Python",
+                        csharp: "C#",
+                        cs: "C#",
+                        "c#": "C#",
+                        dotnet: "C#",
+                        cpp: "C++",
+                        "c++": "C++",
+                        c: "C",
+                        javascript: "JavaScript",
+                        js: "JavaScript",
+                        typescript: "TypeScript",
+                        ts: "TypeScript",
+                        java: "Java",
+                        rust: "Rust",
+                        go: "Go",
+                        html: "HTML",
+                        css: "CSS",
+                        json: "JSON",
+                        powershell: "PowerShell",
+                        bash: "Bash"
+                    };
 
+
+                    languageLabel.textContent =
+                        displayNames[
+                            normalizedLanguage
+                        ] || language;
+
+
+                    const headerActions =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    headerActions.classList.add(
+                        "code-header-actions"
+                    );
+
+
+                    /*
+                        COPY CODE
+                    */
 
                     const copyButton =
                         document.createElement(
@@ -1313,21 +1822,316 @@ const saveEditButton =
                     );
 
 
+                    headerActions.appendChild(
+                        copyButton
+                    );
+
+
+                    /*
+                        DOWNLOAD SOURCE FILE
+                    */
+
+                    const downloadButton =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    downloadButton.classList.add(
+                        "download-code"
+                    );
+
+
+                    downloadButton.textContent =
+                        "Download";
+
+
+                    downloadButton.addEventListener(
+                        "click",
+
+                        async () => {
+
+                            const fileInfo =
+                                getCodeFileInfo(
+                                    code,
+                                    language
+                                );
+
+
+                            downloadButton.disabled =
+                                true;
+
+
+                            downloadButton.textContent =
+                                "Saving...";
+
+
+                            try {
+
+                                const result =
+                                    await window.myAI
+                                        .saveTextFile(
+                                            fileInfo.filename,
+                                            fileInfo.content
+                                        );
+
+
+                                if (
+                                    result &&
+                                    result.success
+                                ) {
+
+                                    downloadButton.textContent =
+                                        "Saved!";
+
+                                } else {
+
+                                    downloadButton.textContent =
+                                        "Download";
+
+                                }
+
+                            } catch (error) {
+
+                                console.error(
+                                    "Save failed:",
+                                    error
+                                );
+
+
+                                downloadButton.textContent =
+                                    "Save failed";
+
+                            }
+
+
+                            setTimeout(
+                                () => {
+
+                                    downloadButton.textContent =
+                                        "Download";
+
+                                    downloadButton.disabled =
+                                        false;
+
+                                },
+
+                                1500
+                            );
+
+                        }
+                    );
+
+
+                    headerActions.appendChild(
+                        downloadButton
+                    );
+
+
+                    /*
+                        BUILD EXE
+
+                        Python uses PyInstaller.
+                        C# uses the .NET builder.
+
+                        Other languages keep only
+                        Copy + Download for now.
+                    */
+
+                    const isPython =
+                        normalizedLanguage ===
+                            "python" ||
+                        normalizedLanguage ===
+                            "py";
+
+
+                    const fileInfoForType =
+                        getCodeFileInfo(
+                            code,
+                            language
+                        );
+
+
+                    const isCSharp =
+                        normalizedLanguage ===
+                            "csharp" ||
+                        normalizedLanguage ===
+                            "cs" ||
+                        normalizedLanguage ===
+                            "c#" ||
+                        normalizedLanguage ===
+                            "dotnet" ||
+                        fileInfoForType.filename
+                            .toLowerCase()
+                            .endsWith(
+                                ".cs"
+                            );
+
+
+                    if (
+                        isPython ||
+                        isCSharp
+                    ) {
+
+                        const buildButton =
+                            document.createElement(
+                                "button"
+                            );
+
+
+                        buildButton.classList.add(
+                            "build-exe"
+                        );
+
+
+                        buildButton.textContent =
+                            "Build EXE";
+
+
+                        buildButton.addEventListener(
+                            "click",
+
+                            async () => {
+
+                                const fileInfo =
+                                    getCodeFileInfo(
+                                        code,
+                                        language
+                                    );
+
+
+                                buildButton.disabled =
+                                    true;
+
+
+                                buildButton.textContent =
+                                    "Building...";
+
+
+                                try {
+
+                                    let result;
+
+
+                                    if (isPython) {
+
+                                        result =
+                                            await window.myAI
+                                                .buildPythonExe(
+                                                    fileInfo.filename,
+                                                    fileInfo.content
+                                                );
+
+                                    } else {
+
+                                        result =
+                                            await window.myAI
+                                                .buildCSharpExe(
+                                                    fileInfo.filename,
+                                                    fileInfo.content
+                                                );
+
+                                    }
+
+
+                                    if (
+                                        result &&
+                                        result.success
+                                    ) {
+
+                                        buildButton.textContent =
+                                            "Built!";
+
+                                    } else if (
+                                        result &&
+                                        result.canceled
+                                    ) {
+
+                                        buildButton.textContent =
+                                            "Build EXE";
+
+                                    } else {
+
+                                        buildButton.textContent =
+                                            "Build Failed";
+
+
+                                        if (
+                                            result &&
+                                            result.error
+                                        ) {
+
+                                            alert(
+                                                result.error
+                                            );
+
+                                            console.error(
+                                                result.error
+                                            );
+
+                                        }
+
+                                    }
+
+                                } catch (error) {
+
+                                    console.error(
+                                        "Build failed:",
+                                        error
+                                    );
+
+
+                                    alert(
+                                        "Build failed: " +
+                                        error.message
+                                    );
+
+
+                                    buildButton.textContent =
+                                        "Build Failed";
+
+                                }
+
+
+                                setTimeout(
+                                    () => {
+
+                                        buildButton.textContent =
+                                            "Build EXE";
+
+                                        buildButton.disabled =
+                                            false;
+
+                                    },
+
+                                    2200
+                                );
+
+                            }
+                        );
+
+
+                        headerActions.appendChild(
+                            buildButton
+                        );
+
+                    }
+
+
                     header.appendChild(
                         languageLabel
                     );
 
 
                     header.appendChild(
-                        copyButton
+                        headerActions
                     );
 
 
-                    pre.parentNode
-                        .insertBefore(
-                            wrapper,
-                            pre
-                        );
+                    pre.parentNode.insertBefore(
+                        wrapper,
+                        pre
+                    );
 
 
                     wrapper.appendChild(

@@ -7,6 +7,36 @@ contextBridge.exposeInMainWorld(
     "myAI",
     {
 
+    buildCSharpExe: (
+    filename,
+    content
+) => {
+
+    return ipcRenderer.invoke(
+        "build-csharp-exe",
+        {
+            filename,
+            content
+        }
+    );
+
+},
+    
+    buildPythonExe: (
+    filename,
+    content
+) => {
+
+    return ipcRenderer.invoke(
+        "build-python-exe",
+        {
+            filename,
+            content
+        }
+    );
+
+},
+
         getModes: () => {
     return ipcRenderer.invoke(
         "get-modes"
@@ -116,6 +146,22 @@ contextBridge.exposeInMainWorld(
             );
 
         },
+
+        saveTextFile: (
+    filename,
+    content
+) => {
+
+    return ipcRenderer.invoke(
+        "save-text-file",
+        {
+            filename,
+            content
+        }
+    );
+
+},
+
 
     }
 );

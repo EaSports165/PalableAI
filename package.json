@@ -1,6 +1,6 @@
 {
   "name": "palableai",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A local AI desktop chat application powered by Ollama.",
   "main": "main.js",
   "scripts": {
@@ -16,14 +16,14 @@
     "electron-builder": "^26.15.3"
   },
   "dependencies": {
-  "dompurify": "^3.4.13",
-  "marked": "^18.0.9"
-},
-"build": {
-  "appId": "com.palableai.app",
-  "productName": "PalableAI",
-  "win": {
-    "target": "portable"
+    "dompurify": "^3.4.13",
+    "marked": "^18.0.9"
+  },
+  "build": {
+    "appId": "com.palableai.app",
+    "productName": "PalableAI",
+    "win": {
+      "target": "portable"
+    }
   }
-}
 }
